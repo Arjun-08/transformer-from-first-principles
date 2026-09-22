@@ -193,32 +193,32 @@ does not contain useful mathematical meaning by itself.
 
 We therefore create a trainable embedding matrix:
 
-\[
+$$
 E \in \mathbb{R}^{V \times d}
-\]
+$$
 
 where:
 
-- \(V\) = vocabulary size
-- \(d\) = embedding dimension
+- $V$ = vocabulary size
+- $d$ = embedding dimension
 
 For this experiment:
 
-\[
+$$
 V = 22
-\]
+$$
 
 and:
 
-\[
+$$
 d = 32
-\]
+$$
 
 Therefore:
 
-\[
+$$
 E \in \mathbb{R}^{22 \times 32}
-\]
+$$
 
 Each token selects one row from this matrix.
 
@@ -264,53 +264,40 @@ Transformers therefore need explicit positional information.
 
 This project uses the original sinusoidal positional encoding idea.
 
-For position \(pos\) and embedding dimension \(i\):
+For position (pos) and embedding dimension (i):
 
-\[
-PE(pos,2i)
-=
-\sin
-\left(
-\frac{pos}
-{10000^{2i/d}}
+$$
+PE(pos,2i) =
+\sin\left(
+\frac{pos}{10000^{2i/d}}
 \right)
-\]
+$$
 
 and:
 
-\[
-PE(pos,2i+1)
-=
-\cos
-\left(
-\frac{pos}
-{10000^{2i/d}}
+$$
+PE(pos,2i+1) =
+\cos\left(
+\frac{pos}{10000^{2i/d}}
 \right)
-\]
+$$
 
 The positional vector is added directly to the token embedding:
 
-\[
+$$
 X = E + PE
-\]
+$$
 
 This gives every token information about both:
 
-```text
-What am I?
-```
-
-and:
-
-```text
-Where am I?
-```
+> **What am I?** — Token identity  
+> **Where am I?** — Positional information
 
 The experiment uses:
 
-\[
+$$
 40 \times 32
-\]
+$$
 
 positional values because the maximum sequence length is 40.
 
@@ -322,27 +309,21 @@ This is the central idea behind the Transformer.
 
 Instead of processing every token independently, self-attention allows every token to interact with other tokens in the sequence.
 
-For an input matrix \(X\), three different representations are created:
+For an input matrix $X$, three different representations are created:
 
-\[
+$$
 Q = XW_Q
-\]
+$$
 
-\[
+$$
 K = XW_K
-\]
+$$
 
-\[
+$$
 V = XW_V
-\]
+$$
 
-These are called:
-
-```text
-Q → Query
-K → Key
-V → Value
-```
+These are called **Query, Key, and Value** representations.
 
 The intuition is:
 
@@ -356,32 +337,27 @@ The intuition is:
 
 Queries and keys are compared using a dot product:
 
-\[
+$$
 S = QK^T
-\]
+$$
 
 A large value means that a query and key are strongly aligned.
 
 However, the dot products can become large when the dimensionality increases.
 
-Therefore the scores are scaled:
+Therefore, the scores are scaled:
 
-\[
-S =
-\frac{QK^T}
-{\sqrt{d_k}}
-\]
+$$
+S = \frac{QK^T}{\sqrt{d_k}}
+$$
 
-where \(d_k\) is the dimension of each attention head.
+where $d_k$ is the dimension of each attention head.
 
 For this model:
 
-\[
-d_k =
-\frac{32}{4}
-=
-8
-\]
+$$
+d_k = \frac{32}{4} = 8
+$$
 
 ---
 
@@ -389,14 +365,9 @@ d_k =
 
 The scaled scores are passed through softmax:
 
-\[
-A =
-softmax
-\left(
-\frac{QK^T}
-{\sqrt{d_k}}
-\right)
-\]
+$$
+A = \{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
+$$
 
 This produces attention weights.
 
@@ -422,23 +393,14 @@ The weights sum to approximately 1.
 
 The attention weights are multiplied by the value vectors:
 
-\[
+$$
 Z = AV
-\]
+$$
 
 Combining the previous equations gives the complete scaled dot-product attention equation:
 
-\[
-\boxed{
-Attention(Q,K,V)
-=
-softmax
-\left(
-\frac{QK^T}
-{\sqrt{d_k}}
-\right)V
-}
-\]
+<img width="592" height="112" alt="image" src="https://github.com/user-attachments/assets/3e353da7-9d63-4852-9640-72f4f4338d34" />
+
 
 This is the mathematical core of self-attention.
 
@@ -468,46 +430,52 @@ Input
  └───────┴───────┴───────┴───────┘
 ```
 
-Each head learns its own:
+Each attention head learns its own projection matrices:
 
-\[
-W_Q,\ W_K,\ W_V
-\]
+<div align="center">
 
-and can therefore learn different interaction patterns.
+<strong>W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub></strong>
+
+</div>
+
+Each head can therefore learn different interaction patterns.
 
 For this experiment:
 
-\[
-d_{model}=32
-\]
+<div align="center">
 
-and:
+<strong>d<sub>model</sub> = 32</strong>
 
-\[
-h=4
-\]
+<br>
 
-so each head receives:
+<strong>h = 4</strong>
 
-\[
-d_k = \frac{32}{4}=8
-\]
+</div>
 
-dimensions.
+Therefore, the dimensionality of each attention head is:
 
-The outputs of the heads are concatenated:
+<div align="center">
 
-\[
-Z =
-Concat(Z_1,Z_2,\ldots,Z_h)
-\]
+<strong>d<sub>k</sub> = d<sub>model</sub> / h = 32 / 4 = 8</strong>
 
-and projected again:
+</div>
 
-\[
-Output = ZW_O
-\]
+The outputs from all heads are then concatenated:
+
+<div align="center">
+
+<strong>Z = Concat(Z<sub>1</sub>, Z<sub>2</sub>, ..., Z<sub>h</sub>)</strong>
+
+</div>
+
+Finally, the concatenated representation is projected again:
+
+<div align="center">
+
+<strong>Output = ZW<sub>O</sub></strong>
+
+</div>
+
 
 ---
 
@@ -550,15 +518,13 @@ This project uses two such encoder layers.
 
 Instead of completely replacing the input with the output of a sub-layer, the original representation is added back:
 
-\[
+$$
 Y = X + Attention(X)
-\]
+$$
 
-and later:
-
-\[
+$$
 Z = Y + FFN(Y)
-\]
+$$
 
 These residual paths allow information to flow directly through the network and make deeper architectures easier to optimize.
 
@@ -568,54 +534,40 @@ These residual paths allow information to flow directly through the network and 
 
 After each residual connection, the representation is normalized.
 
-For an input vector \(x\):
+For an input vector $x$:
 
-\[
-\mu =
-\frac{1}{d}
-\sum_{i=1}^{d}x_i
-\]
+$$
+\mu = \frac{1}{d}\sum_{i=1}^{d}x_i
+$$
 
 and:
 
-\[
-\sigma^2 =
-\frac{1}{d}
-\sum_{i=1}^{d}(x_i-\mu)^2
-\]
+$$
+\sigma^2 = \frac{1}{d}\sum_{i=1}^{d}(x_i-\mu)^2
+$$
 
 The normalized representation is:
 
-\[
-\hat{x}
-=
-\frac{x-\mu}
-{\sqrt{\sigma^2+\epsilon}}
-\]
+$$
+\hat{x} = \frac{x-\mu}{\sqrt{\sigma^2+\epsilon}}
+$$
 
 Trainable scale and shift parameters then produce:
 
-\[
-y =
-\gamma\hat{x}+\beta
-\]
+$$
+y = \gamma\hat{x}+\beta
+$$
 
-The implementation manually calculates these statistics and applies trainable \(\gamma\) and \(\beta\).
-
+> The implementation manually calculates these statistics and applies trainable $\gamma$ and $\beta$.
 ---
 
 ## 16. Feed-Forward Network
 
 After attention, each token representation independently passes through a small neural network:
 
-\[
-FFN(x)
-=
-W_2
-\,
-ReLU(W_1x+b_1)
-+b_2
-\]
+$$
+FFN(x) = W_2\{ReLU}(W_1x+b_1)+b_2
+$$
 
 The dimensionality used here is:
 
@@ -695,31 +647,31 @@ There is no decoder and no autoregressive text generation.
 
 The Transformer produces one representation for every position:
 
-\[
+$$
 H \in \mathbb{R}^{L \times d}
-\]
+$$
 
-where \(L\) is the sequence length.
+where $L$ is the sequence length.
 
 The special `[CLS]` token is placed at the beginning of the sequence.
 
 Its final representation is used as a summary representation:
 
-\[
-h_{CLS}=H_0
-\]
+$$
+h_{CLS} = H_0
+$$
 
 The classification head then computes:
 
-\[
-logits = W_ch_{CLS}+b_c
-\]
+$$
+logits = W_c h_{CLS} + b_c
+$$
 
 For this binary task:
 
-\[
+$$
 32 \rightarrow 2
-\]
+$$
 
 The two outputs correspond to the two possible classes.
 
@@ -729,26 +681,21 @@ The two outputs correspond to the two possible classes.
 
 The model produces two logits:
 
-\[
+$$
 z_0,\ z_1
-\]
+$$
 
 Softmax converts them into class probabilities:
 
-\[
-P(y=i)
-=
-\frac{e^{z_i}}
-{\sum_j e^{z_j}}
-\]
+$$
+P(y=i) = \frac{e^{z_i}}{\sum_j e^{z_j}}
+$$
 
 Training minimizes cross-entropy:
 
-\[
-\mathcal{L}
-=
--\log P(y_{true})
-\]
+$$
+\mathcal{L} = -\log P(y_{\text{true}})
+$$ 
 
 The parameters are updated using AdamW.
 
@@ -791,117 +738,9 @@ The experiment intentionally keeps the model small.
 | Learning rate | 0.001 |
 | Optimizer | AdamW |
 
-The resulting model contains only:
-
-\[
-17,858
-\]
-
-trainable parameters.
-
 This is deliberately tiny compared with modern language models.
 
----
-
-## 21. Implementation Philosophy
-
-The project avoids high-level Transformer implementations.
-
-The following components are implemented directly:
-
-```text
-Tokenizer
-Embedding lookup
-Sinusoidal positional encoding
-Q/K/V projections
-Scaled dot-product attention
-Multi-head attention
-Residual connections
-Layer normalization
-Feed-forward network
-Transformer encoder
-Classification head
-Training loop
-Evaluation
-Synthetic dataset generation
-```
-
-PyTorch is used primarily as the numerical and automatic-differentiation backend.
-
-The purpose is to understand the architecture rather than recreate an entire deep-learning framework.
-
----
-
-## 22. Project Structure
-
-```text
-transformer-from-first-principles/
-│
-├── data/
-│   ├── __init__.py
-│   └── synthetic_dataset.py
-│
-├── src/
-│   ├── __init__.py
-│   ├── attention.py
-│   ├── layers.py
-│   ├── metrics.py
-│   ├── model.py
-│   ├── positional_encoding.py
-│   ├── tokenizer.py
-│   ├── transformer.py
-│   └── utils.py
-│
-├── checkpoints/
-│
-├── train.py
-├── evaluate.py
-├── requirements.txt
-├── .gitignore
-└── README.md
-```
-
-The separation is intentional: each major mathematical component has its own implementation.
-
----
-
-## 23. Experiment Flow
-
-The complete experiment follows:
-
-```text
-Synthetic Data
-      ↓
-Vocabulary Construction
-      ↓
-Tokenization
-      ↓
-Padding
-      ↓
-Embedding
-      ↓
-Positional Encoding
-      ↓
-Transformer Encoder
-      ↓
-[CLS] Representation
-      ↓
-Classification
-      ↓
-Cross-Entropy Loss
-      ↓
-AdamW
-      ↓
-Validation
-      ↓
-Best Checkpoint
-      ↓
-Test Evaluation
-```
-
-The training script also prints intermediate information so that the construction of the model can be followed directly from the terminal.
-
-For example, the experiment reports:
+The experiment reports:
 
 ```text
 Embedding matrix: [22, 32]
@@ -929,161 +768,32 @@ This makes the relationship between the configuration and the mathematical archi
 
 ---
 
-## 24. Evaluation
 
-The model is evaluated using:
-
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- ROC-AUC
-- Confusion matrix
-
-These metrics provide different views of classification performance rather than relying only on accuracy.
-
-The test set is generated separately from the training set, so the model must process unseen synthetic examples.
 
 ---
 
-## 25. What This Project Demonstrates
+## 21. Discussion
 
-The most important result of this project is not the classification score.
+A Transformer can initially look like a very complicated architecture. At its core, however, the encoder repeatedly performs a relatively small collection of operations.
 
-It is the connection between the equations and the implementation.
+<div align="center">
 
-For example:
+<table>
+<tr>
+<td align="center"><strong>Embedding</strong></td>
+<td>→</td>
+<td align="center"><strong>Position</strong></td>
+<td>→</td>
+<td align="center"><strong>Attention</strong></td>
+<td>→</td>
+<td align="center"><strong>Normalization</strong></td>
+<td>→</td>
+<td align="center"><strong>Feed-Forward</strong></td>
+<td>→</td>
+<td align="center"><strong>Normalization</strong></td>
+</tr>
+</table>
 
-```text
-Q = XWQ
-```
+</div>
 
-becomes an actual tensor operation.
-
-```text
-QKᵀ / √dk
-```
-
-becomes the attention-score calculation.
-
-```text
-softmax(...)
-```
-
-becomes the attention distribution.
-
-```text
-Attention(Q,K,V)
-```
-
-becomes the context representation.
-
-And the sequence of these operations becomes an actual Transformer encoder.
-
-This is the main idea behind building the project from first principles: every major block should have a mathematical explanation and a corresponding implementation.
-
----
-
-## 26. Running the Project
-
-Create and activate a Python environment, then install the dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Generate the synthetic dataset:
-
-```bash
-python -m data.synthetic_dataset
-```
-
-Train the model:
-
-```bash
-python train.py
-```
-
-Inspect individual predictions:
-
-```bash
-python evaluate.py
-```
-
-The best model checkpoint is stored under:
-
-```text
-checkpoints/best_model.pt
-```
-
----
-
-## 27. What Comes Next?
-
-This implementation intentionally stops at the encoder.
-
-The next logical step is to make the synthetic task more demanding rather than immediately increasing the model size.
-
-The progression can be:
-
-```text
-Exact relationship classification
-          ↓
-Multi-hop reasoning
-          ↓
-Negation
-          ↓
-Variable-length reasoning
-          ↓
-Masked-token prediction
-          ↓
-Encoder pretraining
-          ↓
-Causal self-attention
-          ↓
-Decoder-only Transformer
-          ↓
-Next-token prediction
-          ↓
-Tiny GPT-style model
-```
-
-This progression makes the architectural differences easier to understand.
-
-An encoder learns contextual representations from the complete input sequence.
-
-A decoder-only Transformer introduces causal masking so that a token can only attend to earlier positions.
-
-That single change leads toward the architecture used by GPT-style models.
-
----
-
-## 28. Final Perspective
-
-A Transformer can initially look like a very complicated architecture.
-
-At its core, however, the encoder repeatedly performs a relatively small collection of operations:
-
-\[
-\boxed{
-Embedding
-+
-Position
-\rightarrow
-Attention
-\rightarrow
-Normalization
-\rightarrow
-Feed\ Forward
-\rightarrow
-Normalization
-}
-\]
-
-The power comes from repeating these operations while allowing every token to dynamically interact with the others through attention.
-
-This project starts with a tiny 22-token vocabulary and a 17,858-parameter model, but the underlying ideas scale to the much larger Transformer architectures used in modern NLP and multimodal systems.
-
-The objective is therefore not to build a large model.
-
-It is to understand the small one well enough that the large ones stop looking mysterious.
+The power comes from repeating these operations while allowing every token to dynamically interact with the others through attention. This project starts with a tiny 22-token vocabulary and a 17,858-parameter model, but the underlying ideas scale to the much larger Transformer architectures used in modern NLP and multimodal systems. The objective is therefore not to build a large model. It is to understand the small one well enough that the large ones stop looking mysterious.
