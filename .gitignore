@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.venv311/
+
+
+# IDEs
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Training outputs
+checkpoints/
+outputs/
+runs/
+logs/
+
+# Model files
+*.pt
+*.pth
+*.ckpt
+
+# Generated datasets
+data/generated/
+*.csv
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Secrets
+.env
+*.key
+
+# Temporary files
+*.tmp
+*.temp
